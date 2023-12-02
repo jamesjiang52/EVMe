@@ -45,8 +45,39 @@ NATURE_MATRIX = [
 ]
 
 
+def get_move_category(move_name):
+    result = subprocess.run([
+        "run-func",
+        "./calc.js",
+        "get_move_category",
+        move_name
+    ], stdout=subprocess.PIPE, shell=True)
+    return result.stdout.decode("utf-8")
+
+
 def convert_stats_to_tuple(stats):
     return (stats["hp"], stats["atk"], stats["def"], stats["spa"], stats["spd"], stats["spe"])
+
+
+def get_stats_from_base(base_stats, EVs, nature):
+    stats = list(base_stats)
+    
+    for i in range(len(NATURE_MATRIX)):
+        for j in range(len(NATURE_MATRIX[0])):
+            if nature == NATURE_MATRIX[i][j]:
+                boosting_index = i + 1
+                harmful_index = j + 1
+    
+    for i in range(len(stats)):
+        if EVs[i]:
+            if boosting_index == i:
+                stats[i] = floor(1.1*(stats[i] + 1 + (EVs[i] - 4)/8))
+            elif harmful_index == i:
+                stats[i] = floor(0.9*(stats[i] + 1 + (EVs[i] - 4)/8))
+            else:
+                stats[i] += 1 + (EVs[i] - 4)/8
+    
+    return tuple(stats)
 
 
 def get_stats(mon_name, IVs, EVs, level, nature):

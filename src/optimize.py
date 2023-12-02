@@ -12,6 +12,33 @@ import offenses
 import defenses
 
 
+def check_EV_optimality(base_stats, nature, spread):
+    """
+    Check if the nature selection is optimal.
+    """
+    stats = get_stats_from_base(base_stats, spread, nature)
+    
+    for i in range(len(NATURE_MATRIX)):
+        for j in range(len(NATURE_MATRIX[0])):
+            if nature == NATURE_MATRIX[i][j]:
+                boosting_index = i + 1
+    
+    max_stat_index = stats[1:].index(max(stats[1:])) + 1
+    
+    # nature is not optimal if:
+    #   (a) the highest stat (besides HP) is not the nature-boosted stat, AND
+    #   (b) the same stat value of the nature-boosted stat can be achieved with a neutral nature
+    if max_stat_index != boosting_index:
+        if spread[boosting_index]:
+            diff = floor(1.1*(stats[i] + 1 + (spread[boosting_index] - 4)/8)) - stats[boosting_index]
+            if diff <= 32:
+                return False
+        else:  # no EVs invested in nature-boosted stat
+            return False
+        
+    return True
+
+
 def choose_nature(nature_vector, spread):
     """
     Choose a stat to harm, given a stat to boost and all stats' EV investment.
@@ -53,7 +80,7 @@ def choose_nature(nature_vector, spread):
     return NATURE_MATRIX[boosting_index][harmful_index]
 
 
-def optimize_EVs(req_offensive_EVs, req_defensive_EVs, req_speed_EVs, num_spreads=5, bias1=None, bias2=None):
+def optimize_EVs(mon_name, req_offensive_EVs, req_defensive_EVs, req_speed_EVs, num_spreads=5, bias1=None, bias2=None):
     """
     Optimize EV allocation. Optionally, provide 1 or 2 stats to favor when allocating EVs.
     
@@ -62,6 +89,8 @@ def optimize_EVs(req_offensive_EVs, req_defensive_EVs, req_speed_EVs, num_spread
     
     List is sorted in ascending order of remaining EVs (less is better), then decreasing order of sum of favored stats (if specified).
     """
+    base_stats = get_stats(mon_name, PERFECT_IVS, (0, 0, 0, 0, 0, 0), 50, "Serious")
+    
     req_attack_EVs, req_special_attack_EVs = req_offensive_EVs
     req_defense_EVs, req_special_defense_EVs = req_defensive_EVs
 
@@ -91,7 +120,7 @@ def optimize_EVs(req_offensive_EVs, req_defensive_EVs, req_speed_EVs, num_spread
         nature_vector = (attack_EVs[1], defense_EVs_adj[1], special_attack_EVs[1], special_defense_EVs_adj[1], speed_EVs[1])
         if nature_vector.count(True) <= 1 and total_EVs <= 508:
             nature = choose_nature(nature_vector, spread)
-            if nature:
+            if nature and check_EV_optimality(base_stats, nature, spread):
                 spreads.append((
                     508 - total_EVs,
                     (nature, spread),
@@ -129,8 +158,10 @@ def main(argv):
     arg_parser.add_argument("--num_spreads", help="number of EV spreads to suggest (default: 5)", default=5, type=int, metavar="NUM_SPREADS", required=False)
     arg_parser.add_argument("--bias1", help="first stat to favor, one of (hp, atk, def, spa, spd, spe) (default: none)", default=None, metavar="BIAS1", required=False)
     arg_parser.add_argument("--bias2", help="second stat to favor, one of (hp, atk, def, spa, spd, spe) (default: none)", default=None, metavar="BIAS2", required=False)
-    arg_parser.add_argument("--override_url", help="override the default Smogon metagame moveset file url (default: latest VGC metagame at highest rating)",
-        default="https://www.smogon.com/stats/2023-10/moveset/gen9vgc2023regulationebo3-1760.txt", metavar="URL", required=False)
+    arg_parser.add_argument("--moveset_url", help="override the default Smogon metagame moveset file url (default: latest VGC metagame at highest rating)",
+        default="https://www.smogon.com/stats/2023-11/moveset/gen9vgc2023regulationebo3-1760.txt", metavar="MOVESET_URL", required=False)
+    arg_parser.add_argument("--chaos_url", help="override the default Smogon metagame chaos file url (default: latest VGC metagame at highest rating)",
+        default="https://www.smogon.com/stats/2023-11/chaos/gen9vgc2023regulationebo3-1760.json", metavar="CHAOS_URL", required=False)
     
     args = arg_parser.parse_args()
 
@@ -139,8 +170,8 @@ def main(argv):
     mon_data = dirtyjson.loads(open(args.input_file).read())
     mon_name = mon_data["Name"]
 
-    print("Parsing metagame file...")
-    meta_mons = parse.get_mons(args.override_url, args.num_mons)
+    print("Parsing metagame files...")
+    meta_mons = parse.get_mons(args.moveset_url, args.chaos_url, args.num_mons)
 
     print("Calculating speed benchmarks...")
     speed_benchmarks = speed.get_speed_benchmarks(meta_mons)
@@ -161,7 +192,7 @@ def main(argv):
     
     print("Optimizing EVs...")
     #optimized_EVs = optimize_EVs(offensive_EVs, defensive_EVs, speed_EVs, 5)
-    optimized_EVs = optimize_EVs(offensive_EVs, defensive_EVs, speed_EVs, args.num_spreads, bias1=args.bias1, bias2=args.bias2)
+    optimized_EVs = optimize_EVs(mon_name, offensive_EVs, defensive_EVs, speed_EVs, args.num_spreads, bias1=args.bias1, bias2=args.bias2)
     #optimized_EVs = optimize_EVs(offensive_EVs, defensive_EVs, speed_EVs, 5, bias1="def", bias2="spd")
 
     print("Done! Printing suggested EVs spreads...\n")

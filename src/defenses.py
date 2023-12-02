@@ -155,7 +155,15 @@ def allocate_defensive_EVs(mon_name, mon_data, attack_mons):
     status_moves = set()
     for attack_mon_name, attack_mon_data in tqdm(attack_mons.items()):
         mon_calcs_seen = set()  # avoid redundant calcs as much as possible
-        for comb in product(attack_mon_data["Items"], attack_mon_data["Abilities"], attack_mon_data["Spreads"]):
+        spreads = []
+        for spread in attack_mon_data["Spreads"][0]:
+            if spread[1] > 4:
+                spreads.append((spread[0], (0, spread[1], 0, 0, 0, 0)))
+        for spread in attack_mon_data["Spreads"][2]:
+            if spread[1] > 4:
+                spreads.append((spread[0], (0, 0, 0, spread[1], 0, 0)))
+        
+        for comb in product(attack_mon_data["Items"], attack_mon_data["Abilities"], spreads):
             item = comb[0]
             ability = comb[1]
             nature, spread = comb[2]
@@ -170,7 +178,11 @@ def allocate_defensive_EVs(mon_name, mon_data, attack_mons):
                 
                 if move in status_moves:
                     continue
-                
+
+                # Smogon currently has no data about tera type, so just skip
+                if move == "Tera Blast":
+                    continue
+
                 calc = do_damage_calc(
                     move,
                     attack_mon_name,
@@ -259,14 +271,26 @@ if __name__ == "__main__":
         "Flutter Mane": {
             "Abilities": ["Protosynthesis"],
             "Items": ["Booster Energy", "Choice Specs"],
-            "Spreads": [("Modest", (0, 0, 4, 252, 0, 252)), ("Timid", (204, 0, 116, 148, 4, 36))],
+            "Spreads": [
+                [('Timid', 0), ('Modest', 0), ('Bold', 0)],
+                [('Timid', 228, 148), ('Timid', 252, 116), ('Timid', 116, 204)],
+                [('Modest', 36), ('Timid', 4), ('Timid', 100)],
+                [('Timid', 100, 4), ('Timid', 116, 4), ('Timid', 228, 4)],
+                [('Timid', 124), ('Modest', 100), ('Timid', 252)]
+            ],
             "Moves": ["Moonblast", "Dazzling Gleam", "Shadow Ball", "Icy Wind", "Thunderbolt"]
         },
         "Landorus-Therian": {
             "Abilities": ["Intimidate"],
             "Items": ["Choice Scarf", "Assault Vest"],
-            "Spreads": [("Adamant", (4, 252, 0, 0, 0, 252)), ("Jolly", (4, 252, 0, 0, 0, 252))],
-            "Moves": ["Stomping Tantrum", "Rock Slide", "U-turn"]
+            "Spreads": [
+                [('Adamant', 116), ('Adamant', 36), ('Adamant', 196)],
+                [('Adamant', 52, 4), ('Adamant', 60, 108), ('Adamant', 164, 52)],
+                [('Adamant', 0), ('Jolly', 0), ('Relaxed', 4)],
+                [('Jolly', 116, 4), ('Adamant', 164, 4), ('Adamant', 132, 4)],
+                [('Adamant', 252), ('Adamant', 212), ('Jolly', 252)]
+            ],
+            "Moves": ["Stomping Tantrum", "Rock Slide", "U-turn", "Tera Blast"]
         }
     }
     mon_name = "Ninetales-Alola"

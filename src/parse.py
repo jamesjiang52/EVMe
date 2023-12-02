@@ -1,16 +1,17 @@
 import os
 import sys
 import requests
+import dirtyjson
 from pprint import pprint
 from itertools import product
 from util import *
 
 
-def get_mons(file_url, num_mons=12):
+def get_mons(moveset_file_url, chaos_file_url, num_mons=12):
     """
     Parse required mon data from a Smogon moveset URL.
     """
-    resp = requests.get(file_url)
+    resp = requests.get(moveset_file_url)
     lines = [line.strip()[1:-1].strip() for line in resp.text.split("\n")]
     lines = lines[1:]  # skip first line
 
@@ -19,10 +20,10 @@ def get_mons(file_url, num_mons=12):
     mon_curr_name = None
     mon_curr_abilities = []
     mon_curr_items = []
-    mon_curr_spreads = []
+    #mon_curr_spreads = []
     mon_curr_moves = []
     num_items_seen = 0
-    num_spreads_seen = 0
+    #num_spreads_seen = 0
     num_mons_seen = 0
     num_separators_seen = 0
 
@@ -31,7 +32,7 @@ def get_mons(file_url, num_mons=12):
             if num_separators_seen == 8:
                 mon_curr["Abilities"] = mon_curr_abilities
                 mon_curr["Items"] = mon_curr_items
-                mon_curr["Spreads"] = mon_curr_spreads
+                #mon_curr["Spreads"] = mon_curr_spreads
                 mon_curr["Moves"] = mon_curr_moves
                 mons[mon_curr_name] = mon_curr
 
@@ -76,14 +77,15 @@ def get_mons(file_url, num_mons=12):
                         num_items_seen += 1
 
         elif num_separators_seen == 4:  # EV spreads
-            if line != "Spreads":
-                if num_spreads_seen < MAX_NUM_SPREADS:
-                    spread = line.split()[0]
-                    if spread != "Other":
-                        nature, spread = tuple(spread.split(":"))
-                        spread = tuple([int(i) for i in spread.split("/")])
-                        mon_curr_spreads.append((nature, spread))
-                        num_spreads_seen += 1
+            continue
+            #if line != "Spreads":
+            #    if num_spreads_seen < MAX_NUM_SPREADS:
+            #        spread = line.split()[0]
+            #        if spread != "Other":
+            #            nature, spread = tuple(spread.split(":"))
+            #            spread = tuple([int(i) for i in spread.split("/")])
+            #            mon_curr_spreads.append((nature, spread))
+            #            num_spreads_seen += 1
 
         elif num_separators_seen == 5:  # moves
             if line != "Moves":
@@ -98,6 +100,74 @@ def get_mons(file_url, num_mons=12):
 
     # assume NUM_MONS < number of Pokemon listed in file
     # if not, need to manually add last Pokemon
+    
+    chaos = requests.get(chaos_file_url)
+    chaos = dirtyjson.loads(chaos.text)
+    
+    for mon_name, mon_data in mons.items():
+        spreads = chaos["data"][mon_name]["Spreads"]
+        attacks = {}
+        defenses = {}
+        special_attacks = {}
+        special_defenses = {}
+        speeds = {}
+        for spread, percentage in spreads.items():
+            nature, spread = tuple(spread.split(":"))
+            spread = tuple([int(i) for i in spread.split("/")])
+            percentage = float(percentage)
+            
+            if (nature, spread[1]) not in attacks:
+                attacks[(nature, spread[1])] = percentage
+            else:
+                attacks[(nature, spread[1])] += percentage
+            
+            if (nature, spread[0], spread[2]) not in defenses:
+                defenses[(nature, spread[0], spread[2])] = percentage
+            else:
+                defenses[(nature, spread[0], spread[2])] += percentage
+
+            if (nature, spread[3]) not in special_attacks:
+                special_attacks[(nature, spread[3])] = percentage
+            else:
+                special_attacks[(nature, spread[3])] += percentage
+
+            if (nature, spread[0], spread[4]) not in special_defenses:
+                special_defenses[(nature, spread[0], spread[4])] = percentage
+            else:
+                special_defenses[(nature, spread[0], spread[4])] += percentage
+
+            if (nature, spread[5])not in speeds:
+                speeds[(nature, spread[5])] = percentage
+            else:
+                speeds[(nature, spread[5])] += percentage
+        
+        most_attacks = []
+        most_defenses = []
+        most_special_attacks = []
+        most_special_defenses = []
+        most_speeds = []
+        for i in range(MAX_NUM_SPREADS):
+            most_attack = max(attacks, key=attacks.get)
+            most_attacks.append(most_attack)
+            del attacks[most_attack]
+            
+            most_special_attack = max(special_attacks, key=special_attacks.get)
+            most_special_attacks.append(most_special_attack)
+            del special_attacks[most_special_attack]
+            
+            most_defense = max(defenses, key=defenses.get)
+            most_defenses.append(most_defense)
+            del defenses[most_defense]
+            
+            most_special_defense = max(special_defenses, key=special_defenses.get)
+            most_special_defenses.append(most_special_defense)
+            del special_defenses[most_special_defense]
+
+            most_speed = max(speeds, key=speeds.get)
+            most_speeds.append(most_speed)
+            del speeds[most_speed]
+
+        mons[mon_name]["Spreads"] = [most_attacks, most_defenses, most_special_attacks, most_special_defenses, most_speeds]
 
     return mons
 
@@ -438,4 +508,4 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
 
 
 if __name__ == "__main__":
-    pprint(get_mons("https://www.smogon.com/stats/2023-10/moveset/gen9vgc2023regulationebo3-1760.txt"))
+    pprint(get_mons("https://www.smogon.com/stats/2023-11/moveset/gen9vgc2023regulationebo3-1760.txt", "https://www.smogon.com/stats/2023-11/chaos/gen9vgc2023regulationebo3-1760.json"))

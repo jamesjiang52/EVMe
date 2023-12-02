@@ -1,5 +1,14 @@
 import {calculate, Pokemon, Move, Field} from '@smogon/calc';
 
+
+function get_move_category() {
+    const gen = 9;
+    var move_name = process.argv[4];
+    var move = new Move(gen, move_name);
+    console.log(move.category)
+}
+
+
 function get_stats() {
     const gen = 9;
 
@@ -87,4 +96,4 @@ function do_damage_calc() {
     });
 }
 
-export {get_stats, do_damage_calc};
+export {get_move_category, get_stats, do_damage_calc};

@@ -15,7 +15,8 @@ def get_speed_benchmarks(mons):
     """
     speeds = []
     for mon_name, mon_data in tqdm(mons.items()):
-        for nature, spread in mon_data["Spreads"]:
+        for nature, speed in mon_data["Spreads"][4]:
+            spread = (0, 0, 0, 0, 0, speed)
             stats = get_stats(mon_name, PERFECT_IVS, spread, 50, nature)
             mon_data_out = {
                 "Item": "",
@@ -152,14 +153,26 @@ if __name__ == "__main__":
         "Flutter Mane": {
             "Abilities": ["Protosynthesis"],
             "Items": ["Booster Energy", "Choice Specs"],
-            "Spreads": [("Modest", (0, 0, 4, 252, 0, 252)), ("Timid", (204, 0, 116, 148, 4, 36))],
+            "Spreads": [
+                [('Timid', 0), ('Modest', 0), ('Bold', 0)],
+                [('Timid', 228, 148), ('Timid', 252, 116), ('Timid', 116, 204)],
+                [('Modest', 36), ('Timid', 4), ('Timid', 100)],
+                [('Timid', 100, 4), ('Timid', 116, 4), ('Timid', 228, 4)],
+                [('Timid', 124), ('Modest', 100), ('Timid', 252)]
+            ],
             "Moves": ["Moonblast", "Dazzling Gleam", "Shadow Ball", "Icy Wind", "Thunderbolt"]
         },
         "Landorus-Therian": {
             "Abilities": ["Intimidate"],
             "Items": ["Choice Scarf", "Assault Vest"],
-            "Spreads": [("Adamant", (4, 252, 0, 0, 0, 252)), ("Jolly", (4, 252, 0, 0, 0, 252))],
-            "Moves": ["Stomping Tantrum", "Rock Slide", "U-turn"]
+            "Spreads": [
+                [('Adamant', 116), ('Adamant', 36), ('Adamant', 196)],
+                [('Adamant', 52, 4), ('Adamant', 60, 108), ('Adamant', 164, 52)],
+                [('Adamant', 0), ('Jolly', 0), ('Relaxed', 4)],
+                [('Jolly', 116, 4), ('Adamant', 164, 4), ('Adamant', 132, 4)],
+                [('Adamant', 252), ('Adamant', 212), ('Jolly', 252)]
+            ],
+            "Moves": ["Stomping Tantrum", "Rock Slide", "U-turn", "Tera Blast"]
         }
     }
     mon_name = "Ninetales-Alola"
@@ -168,4 +181,4 @@ if __name__ == "__main__":
     speed_benchmarks = get_speed_benchmarks(meta_mons)
     #pprint(speed_benchmarks)
     pprint(allocate_speed_EVs(mon_name, mon_data, speed_benchmarks, tailwind=False))
-    pprint(allocate_speed_EVs(mon_name, mon_data, speed_benchmarks, tailwind=True))
+    #pprint(allocate_speed_EVs(mon_name, mon_data, speed_benchmarks, tailwind=True))
