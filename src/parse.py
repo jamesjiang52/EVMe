@@ -9,7 +9,7 @@ from util import *
 
 def get_mons(moveset_file_url, chaos_file_url, num_mons=12):
     """
-    Parse required mon data from a Smogon moveset URL.
+    Parse required mon data from a Smogon moveset URL and chaos URL.
     """
     resp = requests.get(moveset_file_url)
     lines = [line.strip()[1:-1].strip() for line in resp.text.split("\n")]
@@ -100,10 +100,10 @@ def get_mons(moveset_file_url, chaos_file_url, num_mons=12):
 
     # assume NUM_MONS < number of Pokemon listed in file
     # if not, need to manually add last Pokemon
-    
+
     chaos = requests.get(chaos_file_url)
     chaos = dirtyjson.loads(chaos.text)
-    
+
     for mon_name, mon_data in mons.items():
         spreads = chaos["data"][mon_name]["Spreads"]
         attacks = {}
@@ -115,12 +115,12 @@ def get_mons(moveset_file_url, chaos_file_url, num_mons=12):
             nature, spread = tuple(spread.split(":"))
             spread = tuple([int(i) for i in spread.split("/")])
             percentage = float(percentage)
-            
+
             if (nature, spread[1]) not in attacks:
                 attacks[(nature, spread[1])] = percentage
             else:
                 attacks[(nature, spread[1])] += percentage
-            
+
             if (nature, spread[0], spread[2]) not in defenses:
                 defenses[(nature, spread[0], spread[2])] = percentage
             else:
@@ -140,7 +140,7 @@ def get_mons(moveset_file_url, chaos_file_url, num_mons=12):
                 speeds[(nature, spread[5])] = percentage
             else:
                 speeds[(nature, spread[5])] += percentage
-        
+
         most_attacks = []
         most_defenses = []
         most_special_attacks = []
@@ -150,15 +150,15 @@ def get_mons(moveset_file_url, chaos_file_url, num_mons=12):
             most_attack = max(attacks, key=attacks.get)
             most_attacks.append(most_attack)
             del attacks[most_attack]
-            
+
             most_special_attack = max(special_attacks, key=special_attacks.get)
             most_special_attacks.append(most_special_attack)
             del special_attacks[most_special_attack]
-            
+
             most_defense = max(defenses, key=defenses.get)
             most_defenses.append(most_defense)
             del defenses[most_defense]
-            
+
             most_special_defense = max(special_defenses, key=special_defenses.get)
             most_special_defenses.append(most_special_defense)
             del special_defenses[most_special_defense]
@@ -188,7 +188,7 @@ def process_damage_rolls(max_hp, damage_rolls, hko_level, sitrus_berry=False, le
             recovery_factor = 1/16
         else:
             recovery_factor = 0
-    
+
         damage_rolls = product(damage_rolls, repeat=2)
         damage_rolls = sorted([sum(damage) for damage in damage_rolls])
         max_hp += floor(max_hp*recovery_factor)
@@ -201,14 +201,17 @@ def process_damage_rolls(max_hp, damage_rolls, hko_level, sitrus_berry=False, le
     return (min_percent, max_percent, kill_percent)
 
 
-def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs, defense_EVs, special_attack_EVs, special_defense_EVs, speed_EVs):
+def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs, defense_EVs, special_attack_EVs, special_defense_EVs, speed_EVs, print_to_stdout=True):
     """
     Print relevant offensive/defensive/speed calcs for the specified EV spread.
     """
-    print("="*80)
-    print("Suggested nature:           {}".format(nature))
-    print("Suggested EV spread:        {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe".format(*spread))
-    print("Remaining EVs:              {}\n".format(remaining_EVs))
+    if print_to_stdout:
+        print("="*80)
+        print("Suggested nature:           {}".format(nature))
+        print("Suggested EV spread:        {} HP / {} Atk / {} Def / {} SpA / {} SpD / {} Spe".format(*spread))
+        print("Remaining EVs:              {}\n".format(remaining_EVs))
+    else:
+        calcs = ["N/A", "N/A", "N/A", "N/A", "N/A"]
 
     attack_benchmark_data = attack_EVs[5]
     if attack_benchmark_data:
@@ -244,7 +247,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             modifier_D = "-"
         else:
             modifier_D = ""
-        
+
         sitrus_berry = False
         leftovers = False
         if attack_benchmark_data["Item"] in HEAL_1_16_ITEMS:
@@ -258,7 +261,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
         else:
             hko = "2"
 
-        print("Attack benchmark:           {}{} Atk {} {} {} {} vs. {} HP / {}{} Def {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
+        attack_str = "{}{} Atk {} {} {} {} vs. {} HP / {}{} Def {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
             A,
             modifier_A,
             mon_data["Item"],
@@ -275,9 +278,15 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             max_percent,
             kill_percent,
             hko
-        ))
+        )
+        if print_to_stdout:
+            print("Attack benchmark:           {}".format(attack_str))
+        else:
+            calcs[0] = attack_str
+
     else:
-        print("Attack benchmark:           N/A")
+        if print_to_stdout:
+            print("Attack benchmark:           N/A")
 
     defense_benchmark_data = defense_EVs[5]
     if defense_benchmark_data:
@@ -313,7 +322,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             modifier_D = "-"
         else:
             modifier_D = ""
-        
+
         sitrus_berry = False
         leftovers = False
         if mon_data["Item"] in HEAL_1_16_ITEMS:
@@ -327,7 +336,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
         else:
             hko = "2"
 
-        print("Defense benchmark:          {}{} Atk {} {} {} {} vs. {} HP / {}{} Def {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
+        defense_str = "{}{} Atk {} {} {} {} vs. {} HP / {}{} Def {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
             A,
             modifier_A,
             defense_benchmark_data["Ability"],
@@ -344,9 +353,14 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             max_percent,
             kill_percent,
             hko
-        ))
+        )
+        if print_to_stdout:
+            print("Defense benchmark:          {}".format(defense_str))
+        else:
+            calcs[1] = defense_str
     else:
-        print("Defense benchmark:          N/A")
+        if print_to_stdout:
+            print("Defense benchmark:          N/A")
 
     special_attack_benchmark_data = special_attack_EVs[5]
     if special_attack_benchmark_data:
@@ -382,7 +396,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             modifier_D = "-"
         else:
             modifier_D = ""
-        
+
         sitrus_berry = False
         leftovers = False
         if special_attack_benchmark_data["Item"] in HEAL_1_16_ITEMS:
@@ -396,7 +410,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
         else:
             hko = "2"
 
-        print("Special attack benchmark:   {}{} SpA {} {} {} {} vs. {} HP / {}{} SpD {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
+        special_attack_str = "{}{} SpA {} {} {} {} vs. {} HP / {}{} SpD {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
             A,
             modifier_A,
             mon_data["Item"],
@@ -413,9 +427,14 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             max_percent,
             kill_percent,
             hko
-        ))
+        )
+        if print_to_stdout:
+            print("Special attack benchmark:   {}".format(special_attack_str))
+        else:
+            calcs[2] = special_attack_str
     else:
-        print("Special attack benchmark:   N/A")
+        if print_to_stdout:
+            print("Special attack benchmark:   N/A")
 
     special_defense_benchmark_data = special_defense_EVs[5]
     if special_defense_benchmark_data:
@@ -451,7 +470,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             modifier_D = "-"
         else:
             modifier_D = ""
-        
+
         sitrus_berry = False
         leftovers = False
         if mon_data["Item"] in HEAL_1_16_ITEMS:
@@ -465,7 +484,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
         else:
             hko = "2"
 
-        print("Special defense benchmark:  {}{} SpA {} {} {} {} vs. {} HP / {}{} SpD {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
+        special_defense_str = "{}{} SpA {} {} {} {} vs. {} HP / {}{} SpD {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
             A,
             modifier_A,
             special_defense_benchmark_data["Ability"],
@@ -482,9 +501,14 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             max_percent,
             kill_percent,
             hko
-        ))
+        )
+        if print_to_stdout:
+            print("Special defense benchmark:  {}".format(special_defense_str))
+        else:
+            calcs[3] = special_defense_str
     else:
-        print("Special defense benchmark:  N/A")
+        if print_to_stdout:
+            print("Special defense benchmark:  N/A")
 
     speed_benchmark_data = speed_EVs[3]
     if speed_benchmark_data:
@@ -494,17 +518,67 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             modifier = "-"
         else:
             modifier = ""
-        
+
         if speed_benchmark_data["Item"]:
             speed_benchmark_data["Item"] = " " + speed_benchmark_data["Item"]
         if speed_benchmark_data["Ability"]:
             speed_benchmark_data["Ability"] = " " + speed_benchmark_data["Ability"]
 
-        print("Speed benchmark:            Outspeed {}{} Spe{}{} {}".format(speed_benchmark_data["Spread"][1][5], modifier, speed_benchmark_data["Item"], speed_benchmark_data["Ability"], speed_EVs[2]))
+        speed_str = "{}{} Spe{}{} {}".format(speed_benchmark_data["Spread"][1][5], modifier, speed_benchmark_data["Item"], speed_benchmark_data["Ability"], speed_EVs[2])
+        if print_to_stdout:
+            print("Speed benchmark:            {}".format(speed_str))
+        else:
+            calcs[4] = speed_str
     else:
-        print("Speed benchmark:            N/A")
-    
-    print("="*80 + "\n")
+        if print_to_stdout:
+            print("Speed benchmark:            N/A")
+
+    if print_to_stdout:
+        print("="*80 + "\n")
+    else:
+        return calcs
+
+
+def import_from_paste(paste):
+    """
+    Import a single mon in Pokepaste format to a dict expected by optimizer.
+
+    Note that paste is expected to contain all required fields, handling of this should be done by frontend.
+    """
+    lines = paste.split("\n")
+
+    mon = {}
+    moves = []
+
+    first_line = lines[0].strip()
+    mon_info = first_line.split("@")
+    mon["Item"] = mon_info[1].strip()
+    mon_info = mon_info[0].strip().split()
+
+    mod = 1 if mon_info[-1] in ["(M)", "(F)"] else 0
+    if len(mon_info) == 2 + mod:  # has nickname
+        mon["Name"] = mon_info[1][1:-1]
+    else:
+        mon["Name"] = mon_info[0]
+
+    for line in lines[1:]:
+        line = line.strip()
+        if line.startswith("Ability"):
+            mon["Ability"] = line.split(":")[1].strip()
+        elif line.startswith("EVs"):  # don't currently use EVs, but include it anyway
+            fixed_EVs = [0, 0, 0, 0, 0, 0]
+            EVs = line.split(":")[1].strip().split(" / ")
+            for EV in EVs:
+                value, name = EV.split()
+                fixed_EVs[stat_names.index(name)] = int(value)
+            mon["EVs"] = fixed_EVs
+        elif line.startswith("-"):  # moves
+            moves.append(line[1:].strip())
+        elif line.endswith("Nature"):  # don't currently use nature, but include it anyway
+            mon["Nature"] = line.split()[0]
+
+    mon["Moves"] = moves
+    return mon
 
 
 if __name__ == "__main__":

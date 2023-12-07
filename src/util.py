@@ -44,6 +44,8 @@ NATURE_MATRIX = [
     ["Timid", "Hasty", "Jolly", "Naive", "Serious"]
 ]
 
+STAT_NAMES = ["HP", "Atk", "Def", "SpA", "SpD", "Spe"]
+
 
 def get_move_category(move_name):
     result = subprocess.run([
