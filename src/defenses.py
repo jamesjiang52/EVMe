@@ -6,7 +6,7 @@ from scipy import optimize as opt
 import numpy as np
 from itertools import product
 from math import floor, ceil
-from util import *
+from src.util import *
 
 
 def adjust_defensive_EVs(req_hp_EVs, defensive_EVs):
@@ -198,7 +198,7 @@ def allocate_defensive_EVs(mon_name, mon_data, attack_mons):
                     50
                 )
                 
-                if not calc["Damage rolls"]:
+                if not calc["Damage rolls"]:  # is status move OR defending mon is immune
                     status_moves.add(move)
                     continue
                 

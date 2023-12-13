@@ -1,0 +1,9 @@
+{
+  "name": "com.jamesjiang52.evme",
+  "description": "Pokémon EVMe Host",
+  "path": "host.bat",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://hlmhopajkjmhedkpeopflgejafekejgl/"
+  ]
+}

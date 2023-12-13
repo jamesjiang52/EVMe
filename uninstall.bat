@@ -1,0 +1,1 @@
+REG DELETE "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.jamesjiang52.EVMe" /f

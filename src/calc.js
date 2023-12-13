@@ -86,13 +86,19 @@ function do_damage_calc() {
         new Move(gen, move_name),
         new Field({gameType: "Doubles"})
     );
+    
+    var bp;
+    if ("moveBP" in damage_calc.rawDesc)
+        bp = damage_calc.rawDesc.moveBP;
+    else
+        bp = damage_calc.move.bp;
 
     //console.log(damage_calc)
     console.log({
         "Damage rolls": damage_calc.damage,
         "Attacker stats": damage_calc.attacker.stats,
         "Defender stats": damage_calc.defender.stats,
-        "Move": [damage_calc.move.bp, damage_calc.move.category]
+        "Move": [bp, damage_calc.move.category]
     });
 }
 

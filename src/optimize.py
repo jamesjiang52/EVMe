@@ -5,11 +5,11 @@ from tqdm import tqdm
 from itertools import product
 import dirtyjson
 import argparse
-from util import *
-import parse
-import speed
-import offenses
-import defenses
+from src.util import *
+import src.parse
+import src.speed
+import src.offenses
+import src.defenses
 
 
 def check_EV_optimality(base_stats, nature, spread):
@@ -111,10 +111,10 @@ def optimize_EVs(mon_name, req_offensive_EVs, req_defensive_EVs, req_speed_EVs, 
         if defense_EVs[0][0] > special_defense_EVs[0][0]:
             max_hp_EVs = defense_EVs[0][0]
             defense_EVs_adj = defense_EVs
-            special_defense_EVs_adj = defenses.adjust_defensive_EVs(max_hp_EVs, special_defense_EVs)
+            special_defense_EVs_adj = src.defenses.adjust_defensive_EVs(max_hp_EVs, special_defense_EVs)
         else:
             max_hp_EVs = special_defense_EVs[0][0]
-            defense_EVs_adj = defenses.adjust_defensive_EVs(max_hp_EVs, defense_EVs)
+            defense_EVs_adj = src.defenses.adjust_defensive_EVs(max_hp_EVs, defense_EVs)
             special_defense_EVs_adj = special_defense_EVs
         spread = (max_hp_EVs, attack_EVs[0], defense_EVs_adj[0][1], special_attack_EVs[0], special_defense_EVs_adj[0][1], speed_EVs[0])
         total_EVs = sum(spread)
@@ -139,6 +139,8 @@ def optimize_EVs(mon_name, req_offensive_EVs, req_defensive_EVs, req_speed_EVs, 
         if spread[1] not in seen_spreads:
             spreads_uniq.append(spread)
             seen_spreads.add(spread[1])
+    
+    # TODO: remove any that are directly worse than another
 
     # sort by number of remaining EVs (less is better)
     if bias1:

@@ -4,7 +4,7 @@ from pprint import pprint
 from tqdm import tqdm
 from itertools import product
 from math import floor, ceil
-from util import *
+from src.util import *
 
 
 def get_offensive_benchmarks(attack_mon_name, attack_mon_data, defend_mons):
@@ -89,7 +89,6 @@ def get_offensive_benchmarks(attack_mon_name, attack_mon_data, defend_mons):
                     )
                     
                     if not calc["Damage rolls"]:
-                        status_moves.add(move)
                         continue
     
                     if (tuple(calc["Damage rolls"]), i) in mon_calcs_seen:
@@ -103,7 +102,7 @@ def get_offensive_benchmarks(attack_mon_name, attack_mon_data, defend_mons):
                 
                 if skip_calc_eval:
                     continue
-                
+
                 # TODO: (improvement) account for Body Press, Foul Play, etc.
                 if best_move_calc["Move"][1] == "Physical":
                     A = best_move_calc["Attacker stats"][1]
@@ -230,7 +229,7 @@ def allocate_offensive_EVs(mon_name, mon_data, offensive_benchmarks):
         attack_benchmarks = offensive_benchmarks[0][min_attack_index:max_attack_index + 1]
     
         for i in range(len(attack_benchmarks)):
-            benchmark = attack_benchmarks[i][0][0]
+            benchmark = attack_benchmarks[i][0]
             attack_diff = benchmark - min_attack
             if attack_diff > 32:  # can't reach benchmark attack with neutral nature
                 break
@@ -239,7 +238,7 @@ def allocate_offensive_EVs(mon_name, mon_data, offensive_benchmarks):
             attack_EVs.append((EVs, False, *attack_benchmarks[i][1:5]))
     
         for i in range(len(attack_benchmarks)):
-            benchmark = attack_benchmarks[i][0][0]
+            benchmark = attack_benchmarks[i][0]
             min_attack_boost = floor(1.1*(min_attack))
             attack_diff = benchmark - min_attack_boost
             if attack_diff <= 0:
