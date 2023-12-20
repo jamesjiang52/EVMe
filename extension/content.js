@@ -27,55 +27,6 @@ chrome.runtime.onMessage.addListener(({name, data}, sender, sendResponse) => {
 
 chrome.runtime.onMessage.addListener(({name, data}) => {
     if (name === "update-evs") {
-        console.log("received update EVs message");
-        var [hp, atk, def, spa, spd, spe, nature] = data;
-        console.log(hp, atk, def, spa, spd, spe, nature)
-        
-        var atk_mod = "";
-        var def_mod = "";
-        var spa_mod = "";
-        var spd_mod = "";
-        var spe_mod = "";
-        
-        if (["Lonely", "Adamant", "Naughty", "Brave"].includes(nature))
-            atk_mod = "+";
-        else if (["Bold", "Modest", "Calm", "Timid"].includes(nature))
-            atk_mod = "-";
-        
-        if (["Bold", "Impish", "Lax", "Relaxed"].includes(nature))
-            def_mod = "+";
-        else if (["Lonely", "Mild", "Gentle", "Hasty"].includes(nature))
-            def_mod = "-";
-        
-        if (["Modest", "Mild", "Rash", "Quiet"].includes(nature))
-            spa_mod = "+";
-        else if (["Adamant", "Impish", "Careful", "Jolly"].includes(nature))
-            spa_mod = "-";
-        
-        if (["Calm", "Gentle", "Careful", "Sassy"].includes(nature))
-            spd_mod = "+";
-        else if (["Naughty", "Lax", "Rash", "Naive"].includes(nature))
-            spd_mod = "-";
-        
-        if (["Timid", "Hasty", "Jolly", "Naive"].includes(nature))
-            spe_mod = "+";
-        else if (["Brave", "Relaxed", "Quiet", "Sassy"].includes(nature))
-            spe_mod = "-";
-        
-        document.body.querySelector("[name=stat-hp]").value = hp;
-        document.body.querySelector("[name=stat-atk]").value = atk + atk_mod;
-        document.body.querySelector("[name=stat-def]").value = def + def_mod;
-        document.body.querySelector("[name=stat-spa]").value = spa + spa_mod;
-        document.body.querySelector("[name=stat-spd]").value = spd + spd_mod;
-        document.body.querySelector("[name=stat-spe]").value = spe + spe_mod;
-        
-        document.body.querySelector("[name=evslider-hp]").value = hp;
-        document.body.querySelector("[name=evslider-atk]").value = atk;
-        document.body.querySelector("[name=evslider-def]").value = def;
-        document.body.querySelector("[name=evslider-spa]").value = spa;
-        document.body.querySelector("[name=evslider-spd]").value = spd;
-        document.body.querySelector("[name=evslider-spe]").value = spe;
-        
-        document.body.querySelector("[name=nature]").value = nature;
+        document.dispatchEvent(new CustomEvent("updateEVsEvent", {detail: data}));
     }
 })

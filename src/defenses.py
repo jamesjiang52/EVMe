@@ -211,7 +211,7 @@ def allocate_defensive_EVs(mon_name, mon_data, attack_mons):
                     best_move = move
                     best_move_calc = calc
             
-            if skip_calc_eval:
+            if skip_calc_eval or "Move" not in best_move_calc:
                 continue
 
             bp = best_move_calc["Move"][0]

@@ -9,6 +9,11 @@
 	"content_scripts": [{
 		"matches": ["*://play.pokemonshowdown.com/teambuilder"],
 		"js": ["content.js"]
+    },
+    {
+        "world": "MAIN",
+		"matches": ["*://play.pokemonshowdown.com/teambuilder"],
+		"js": ["page.js"]
     }],
 	"action": {
 		"default_title": "EV Me"
