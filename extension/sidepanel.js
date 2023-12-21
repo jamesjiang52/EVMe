@@ -12,7 +12,7 @@ function showSpreads(data) {
     spreads_list.innerHTML = "";
     
     if (data === undefined) {
-        document.body.querySelector("#spreads-text").innerText = "Something went wrong. Please check if input paste is valid. If yes, send input and options to jamesjiang52@gmail.com.";
+        document.body.querySelector("#spreads-text").innerText = "Something went wrong. Please check if input paste is valid and native application is correctly installed. If yes, send input and options to jamesjiang52@gmail.com.";
         return;
     }
 
