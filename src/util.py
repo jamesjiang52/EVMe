@@ -50,7 +50,7 @@ STAT_NAMES = ["HP", "Atk", "Def", "SpA", "SpD", "Spe"]
 def get_move_category(move_name):
     result = subprocess.run([
         "run-func",
-        "./calc.js",
+        "src/calc.js",
         "get_move_category",
         move_name
     ], stdout=subprocess.PIPE, shell=True)
@@ -85,7 +85,7 @@ def get_stats_from_base(base_stats, EVs, nature):
 def get_stats(mon_name, IVs, EVs, level, nature):
     result = subprocess.run([
         "run-func",
-        "./calc.js",
+        "src/calc.js",
         "get_stats",
         mon_name,
         *[str(i) for i in IVs],
@@ -106,7 +106,7 @@ def modify_stat(stat, stat_stage):
 def do_damage_calc(move_name, attack_mon_name, attack_ability, attack_item, attack_EVs, attack_nature, defend_mon_name, defend_ability, defend_item, defend_EVs, defend_nature, level):
     result = subprocess.run([
         "run-func",
-        "./calc.js",
+        "src/calc.js",
         "do_damage_calc",
         move_name,
         attack_mon_name,

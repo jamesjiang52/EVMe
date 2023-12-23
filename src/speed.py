@@ -3,7 +3,7 @@ import sys
 from pprint import pprint
 from tqdm import tqdm
 from math import floor, ceil
-from util import *
+from src.util import *
 
 
 def get_speed_benchmarks(mons):

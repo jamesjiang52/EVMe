@@ -2,9 +2,17 @@
 
 ## Overview
 
-EV Me is a command line tool that optimizes EV investment for a Pokémon for a specific metagame, given the Pokémon's desired held item, ability, and moves.
+EV Me is a Chrome extension for Pokémon Showdown that optimizes effort value (EV) investment for a Pokémon for a specific VGC metagame. The optimizer is configurable, with options such as the number of top meta Pokémon to consider when allocating EVs. This repository contains the extension itself as well as a native application which must be installed on the host machine.
 
-## Installation
+## Requirements
+
+The following versions were used for development and are compatible with the required dependencies.
+
+* Python 3.6.3
+* Node.js 16.13.0
+* npm 8.1.0
+
+## Install
 
 Clone this repo:
 ```
@@ -12,88 +20,86 @@ git clone https://github.com/jamesjiang52/EVMe.git
 cd EVMe
 ```
 
-Install required libraries:
+Install dependencies:
 ```
 pip install -r requirements.txt
 npm install
+npm i -g run-func
 ```
+
+Run the provided install script to set up the native application:
+```
+.\install.bat
+```
+
+In Chrome, navigate to `chrome://extensions`. In the top right, make sure "Developer mode" is turned on, then click "Load unpacked" in the top left. Select the `extension` directory in this repo to load the EV Me extension. Pin this extension to the toolbar.
+
+Lastly, open `manifest.json` in this repo's root directory and replace the current allowed extension ID with the ID of the newly-loaded extension (this will differ from the screenshot below).
+
+<pre>
+{
+  "name": "com.jamesjiang52.evme",
+  "description": "Pokémon EVMe Host",
+  "path": "host.bat",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://<b>hoejpnilgdhphfdjigabmbcccmhjhdji</b>/"
+  ]
+}
+</pre>
+
+![Extension ID](images/ext_ID.png)
 
 ## Usage
 
-Run:
-```
-cd src/
-python optimize.py input_example
-```
+EV Me takes as input a Pokémon, its ability and held item, and any number of moves, and outputs a user-specified number of optimized EV spreads. An EV spread is considered to be more optimal if it wastes less EVs, that is, if every single available EV is contributing to a speed benchmark, or an offensive or defensive calc. This is best illustrated using an example (taken from the November 2023, OTS Bo3 VGC metagame at highest Elo bracket).
+
+Consider the following Gardevoir set:
+
+![Gardevoir set](images/set.png)
+
+The extension sidebar provides an interface to interact with Pokémon Showdown and the native application. Upon first opening the sidebar, the Pokémon set, options, and suggested EV spreads will be blank.
+
+Clicking "Update set" will import the current Pokémon set info into the extension and convert it into a PokéPaste, shown on the sidebar.
+
+![Gardevoir paste](images/paste.png)
+
+Next, the number of top meta Pokémon to consider and the number of EV spreads to suggest may be adjusted (though the default values are sensible and recommended). Additionally, up to 2 of the Pokémon's stats to favor in the optimizer may be selected. It is *strongly* recommended to select at least one of these. Clicking "Optimize EVs!" will start the native application and run the optimizer. This may take several minutes depending on the speed of the host machine and the number of Pokémon to consider.
+
+![Options](images/options.png)
+
+Once the native application has finished, the suggested EV spreads will be listed on the sidebar, along with the nature, any remaining unallocated EVs (preferably 0), and the relevant offensive and defensive calcs and speed benchmark for which the EV spread was optimized.
+
+![Gardevoir suggested spreads](images/spreads.png)
+
+For example, a Gardevoir with the first suggested spread above is extremely likely to survive a Surging Strikes from a common Urshifu-Rapid-Strike, is extremely likely to OHKO a common Amoonguss with Expanding Force, is guaranteed to survive a Flash Cannon from a common Heatran, and is able to outspeed a common Dragonite.
 
 ```
-usage: optimize.py [-h] [--num_mons NUM_MONS] [--num_spreads NUM_SPREADS] [--bias1 BIAS1] [--bias2 BIAS2] [--moveset_url MOVESET_URL] [--chaos_url CHAOS_URL] input_file
+28 HP / 0 Atk / 188 Def / 244 SpA / 36 SpD / 12 Spe
+Modest Nature
+0 Remaining EVs
 
-positional arguments:
-  input_file            paste of mon to allocate EVs for
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --num_mons NUM_MONS   number of top meta mons to include in EV spread optimization (default: 12)
-  --num_spreads NUM_SPREADS
-                        number of EV spreads to suggest (default: 5)
-  --bias1 BIAS1         first stat to favor, one of (HP, Atk, Def, SpA, SpD, Spe) (default: none) (at least one bias recommended)
-  --bias2 BIAS2         second stat to favor, one of (HP, Atk, Def, SpA, SpD, Spe) (default: none)
-  --moveset_url MOVESET_URL
-                        override the default Smogon metagame moveset file url (default: latest VGC metagame at highest rating)
-  --chaos_url CHAOS_URL
-                        override the default Smogon metagame chaos file url (default: latest VGC metagame at highest rating)
+252+ Atk Unseen Fist Choice Scarf Urshifu-Rapid-Strike Surging Strikes vs. 28 HP / 188 Def Life Orb Trace Gardevoir: 85.7 - 100.0% -- 6.2% chance to OHKO
+244+ SpA Life Orb Trace Gardevoir Expanding Force vs. 244 HP / 28 SpD Regenerator Sitrus Berry Amoonguss: 99.1 - 118.2% -- 93.8% chance to OHKO
+156+ SpA Flash Fire Leftovers Heatran Flash Cannon vs. 28 HP / 36 SpD Life Orb Trace Gardevoir: 83.0 - 99.3% -- 0.0% chance to OHKO
+Outspeed 4 Spe Dragonite
 ```
 
-### Input example
+Clicking "Use this spread" above a specific EV spread will export the spread directly into the Showdown teambuilder.
 
-The input file should be a valid PokéPaste of a single Pokémon, with its held item, ability, and at least one move specified. Other fields (EVs, level, shiny) will be ignored if present.
+![Gardevoir stats](images/stats.png)
 
+## Uninstall
+
+Run the provided uninstall script:
 ```
-Ninetales-Alola @ Light Clay  
-Ability: Snow Warning  
-- Aurora Veil  
-- Blizzard  
-- Icy Wind  
-- Protect
+.\uninstall.bat
 ```
 
-### Output example
-
+Delete this repo:
 ```
-================================================================================
-Suggested nature:           Timid
-Suggested EV spread:        140 HP / 0 Atk / 244 Def / 20 SpA / 84 SpD / 20 Spe
-Remaining EVs:              0
-
-Attack benchmark:           N/A
-Defense benchmark:          252+ Atk Unseen Fist Life Orb Urshifu-Rapid-Strike Close Combat vs. 140 HP / 244 Def Light Clay Snow Warning Ninetales-Alola: 84.3 - 99.4% -- 0.0% chance to OHKO
-Special attack benchmark:   20 SpA Light Clay Snow Warning Ninetales-Alola Blizzard vs. 244 HP / 44 SpD Grassy Surge Miracle Seed Rillaboom: 49.5 - 58.3% -- 96.5% chance to 2HKO
-Special defense benchmark:  100 SpA Protosynthesis Booster Energy Flutter Mane Moonblast vs. 140 HP / 84 SpD Light Clay Snow Warning Ninetales-Alola: 41.6 - 49.4% -- 0.0% chance to 2HKO
-Speed benchmark:            212 Spe Urshifu-Rapid-Strike
-================================================================================
-
-================================================================================
-Suggested nature:           Timid
-Suggested EV spread:        52 HP / 0 Atk / 252 Def / 20 SpA / 164 SpD / 20 Spe
-Remaining EVs:              0
-
-Attack benchmark:           N/A
-Defense benchmark:          156+ Atk Unseen Fist Life Orb Urshifu-Rapid-Strike Close Combat vs. 52 HP / 252 Def Light Clay Snow Warning Ninetales-Alola: 83.9 - 98.7% -- 0.0% chance to OHKO
-Special attack benchmark:   20 SpA Light Clay Snow Warning Ninetales-Alola Blizzard vs. 244 HP / 44 SpD Grassy Surge Miracle Seed Rillaboom: 49.5 - 58.3% -- 96.5% chance to 2HKO
-Special defense benchmark:  100 SpA Protosynthesis Booster Energy Flutter Mane Moonblast vs. 52 HP / 164 SpD Light Clay Snow Warning Ninetales-Alola: 41.3 - 49.0% -- 0.0% chance to 2HKO
-Speed benchmark:            212 Spe Urshifu-Rapid-Strike
-================================================================================
-
-================================================================================
-Suggested nature:           Bold
-Suggested EV spread:        28 HP / 0 Atk / 212 Def / 20 SpA / 196 SpD / 52 Spe
-Remaining EVs:              0
-
-Attack benchmark:           N/A
-Defense benchmark:          116+ Atk Intimidate Choice Scarf Landorus-Therian Stomping Tantrum vs. 28 HP / 212+ Def Light Clay Snow Warning Ninetales-Alola: 41.4 - 49.3% -- 0.0% chance to 2HKO
-Special attack benchmark:   20 SpA Light Clay Snow Warning Ninetales-Alola Blizzard vs. 244 HP / 44 SpD Grassy Surge Miracle Seed Rillaboom: 49.5 - 58.3% -- 96.5% chance to 2HKO
-Special defense benchmark:  100 SpA Protosynthesis Booster Energy Flutter Mane Moonblast vs. 28 HP / 196 SpD Light Clay Snow Warning Ninetales-Alola: 41.4 - 49.3% -- 0.0% chance to 2HKO
-Speed benchmark:            28 Spe Tornadus
-================================================================================
+cd ..
+rmdir /s EVMe
 ```
+
+Navigate to `chrome://extensions` and remove the unpacked EV Me extension.

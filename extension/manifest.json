@@ -1,0 +1,35 @@
+{
+	"manifest_version": 3,
+	"name": "EV Me",
+	"version": "1.0",
+	"description": "Suggest Pokémon EV spreads.",
+	"icons": {
+		"16": "icons/icon16.png",
+		"32": "icons/icon32.png",
+		"48": "icons/icon48.png",
+		"128":  "icons/icon128.png"
+	},
+	"background": {
+		"service_worker": "service-worker.js"
+	},
+	"content_scripts": [{
+		"matches": ["*://play.pokemonshowdown.com/teambuilder"],
+		"js": ["content.js"]
+    },
+    {
+        "world": "MAIN",
+		"matches": ["*://play.pokemonshowdown.com/teambuilder"],
+		"js": ["page.js"]
+    }],
+	"action": {
+		"default_title": "EV Me"
+	},
+	"permissions": ["sidePanel", "tabs", "nativeMessaging"],
+	"commands": {
+		"_execute_action": {
+			"suggested_key": {
+				"default": "Ctrl+B"
+			}
+		}
+	}
+}

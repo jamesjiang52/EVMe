@@ -1,0 +1,1 @@
+REG ADD "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.jamesjiang52.evme" /ve /t REG_SZ /d "%~dp0manifest.json" /f

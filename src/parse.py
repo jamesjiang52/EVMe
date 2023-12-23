@@ -4,7 +4,7 @@ import requests
 import dirtyjson
 from pprint import pprint
 from itertools import product
-from util import *
+from src.util import *
 
 
 def get_mons(moveset_file_url, chaos_file_url, num_mons=12):
@@ -524,7 +524,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
         if speed_benchmark_data["Ability"]:
             speed_benchmark_data["Ability"] = " " + speed_benchmark_data["Ability"]
 
-        speed_str = "{}{} Spe{}{} {}".format(speed_benchmark_data["Spread"][1][5], modifier, speed_benchmark_data["Item"], speed_benchmark_data["Ability"], speed_EVs[2])
+        speed_str = "Outspeed {}{} Spe{}{} {}".format(speed_benchmark_data["Spread"][1][5], modifier, speed_benchmark_data["Item"], speed_benchmark_data["Ability"], speed_EVs[2])
         if print_to_stdout:
             print("Speed benchmark:            {}".format(speed_str))
         else:
@@ -553,13 +553,14 @@ def import_from_paste(paste):
     first_line = lines[0].strip()
     mon_info = first_line.split("@")
     mon["Item"] = mon_info[1].strip()
-    mon_info = mon_info[0].strip().split()
 
-    mod = 1 if mon_info[-1] in ["(M)", "(F)"] else 0
-    if len(mon_info) == 2 + mod:  # has nickname
-        mon["Name"] = mon_info[1][1:-1]
-    else:
-        mon["Name"] = mon_info[0]
+    # FIXME: name/nickname/gender parsing
+    mon["Name"] = mon_info[0].strip()
+    #mod = 1 if mon_info[-1] in ["(M)", "(F)"] else 0
+    #if len(mon_info) == 2 + mod:  # has nickname
+    #    mon["Name"] = mon_info[1][1:-1]
+    #else:
+    #    mon["Name"] = mon_info[0]
 
     for line in lines[1:]:
         line = line.strip()

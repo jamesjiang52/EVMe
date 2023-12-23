@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>EV Me</title>
+		<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<style>body {font-family: "Raleway", Arial, Helvetica, sans-serif; font-size: 12px}</style>
+        <style>hr{border:0;border-top:1px solid #aaaaaa;margin:20px 0}</style>
+	</head>
+	<body class="w3-container w3-light-grey">
+		<h1 class="w3-xlarge"><strong>EV Me</strong></h1>
+		<div id="pokepaste">
+			<button class="w3-button w3-blue-grey" id="update-pokepaste-btn">Update set</button>
+			<p class="w3-input w3-border" id="pokepaste-text">Please update set with a Pokémon, ability, and held item.</p>
+		</div>
+		<div id="args">
+			<form>
+				<label for="num-meta-mons">Number of top meta Pokémon:</label>
+				<input class="w3-input w3-border" id="num-meta-mons" type="number" value="12" />
+				<br>
+				<label for="num-spreads">Number of EV spreads to suggest:</label>
+				<input class="w3-input w3-border" id="num-spreads" type="number" value="5" />
+				<br>
+				<fieldset>
+					<legend>Stats to favor (up to 2):</legend>
+					<input class="w3-check" type="checkbox" id="HP" name="HP" />
+					<label for="HP">HP</label>
+					<br>
+					<input class="w3-check" type="checkbox" id="Atk" name="Atk" />
+					<label for="Atk">Atk</label>
+					<br>
+					<input class="w3-check" type="checkbox" id="Def" name="Def" />
+					<label for="Def">Def</label>
+					<br>
+					<input class="w3-check" type="checkbox" id="SpA" name="SpA" />
+					<label for="SpA">SpA</label>
+					<br>
+					<input class="w3-check" type="checkbox" id="SpD" name="SpD" />
+					<label for="SpD">SpD</label>
+					<br>
+					<input class="w3-check" type="checkbox" id="Spe" name="Spe" />
+					<label for="Spe">Spe</label>
+				</fieldset>
+				<br>
+                <!--
+				<label for="moveset-url">Override Smogon moveset URL (optional):</label>
+				<input type="url" name="moveset-url" id="moveset-url" value="https://www.smogon.com/stats/2023-11/moveset/gen9vgc2023regulationebo3-1760.txt" pattern="https://www.smogon.*moveset.*txt" />
+				<br>
+				<label for="chaos-url">Override Smogon chaos URL (optional):</label>
+				<input type="url" name="chaos-url" id="chaos-url" value="https://www.smogon.com/stats/2023-11/chaos/gen9vgc2023regulationebo3-1760.json" pattern="https://www.smogon.*chaos.*json" />
+				<br>
+                -->
+			</form>
+            <button class="w3-button w3-blue-grey" id="submit-btn">Optimize EVs!</button>
+		</div>
+		<div id="spreads">
+            <h2 class="w3-large">Suggested spreads:</h2>
+			<p id="spreads-text">Waiting for input...</p>
+            <div id="spreads-list"></div>
+		</div>
+		<script src="sidepanel.js"></script>
+	</body>
+</html>
