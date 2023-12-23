@@ -2,7 +2,7 @@
 
 ## Overview
 
-EV Me is a Chrome extension for Pokémon Showdown that optimizes effort value (EV) investment for a Pokémon for a specific VGC metagame. The optimizer is configurable, with options such as the number of top meta Pokémon to consider when allocating EVs. This repository contains the native application which must be installed alongside the extension here [FIXME link after extension uploaded]. Extension files are also provided in the [extension](extension) directory.
+EV Me is a Chrome extension for Pokémon Showdown that optimizes effort value (EV) investment for a Pokémon for a specific VGC metagame. The optimizer is configurable, with options such as the number of top meta Pokémon to consider when allocating EVs. This repository contains the extension itself as well as a native application which must be installed on the host machine.
 
 ## Requirements
 
@@ -31,6 +31,24 @@ Run the provided install script to set up the native application:
 ```
 .\install.bat
 ```
+
+In Chrome, navigate to `chrome://extensions`. In the top right, make sure "Developer mode" is turned on, then click "Load unpacked" in the top left. Select the `extension` directory in this repo to load the EV Me extension. Pin this extension to the toolbar.
+
+Lastly, open `manifest.json` in this repo's root directory and replace the current allowed extension ID with the ID of the newly-loaded extension (this will differ from the screenshot below).
+
+<pre>
+{
+  "name": "com.jamesjiang52.evme",
+  "description": "Pokémon EVMe Host",
+  "path": "host.bat",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://<b>hoejpnilgdhphfdjigabmbcccmhjhdji</b>/"
+  ]
+}
+</pre>
+
+![Extension ID](images/ext_ID.png)
 
 ## Usage
 
@@ -83,3 +101,5 @@ Delete this repo:
 cd ..
 rmdir /s EVMe
 ```
+
+Navigate to `chrome://extensions` and remove the unpacked EV Me extension.

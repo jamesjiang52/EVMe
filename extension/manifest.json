@@ -2,7 +2,7 @@
 	"manifest_version": 3,
 	"name": "EV Me",
 	"version": "1.0",
-	"description": "Suggest EV spreads.",
+	"description": "Suggest Pokémon EV spreads.",
 	"icons": {
 		"16": "icons/icon16.png",
 		"32": "icons/icon32.png",
