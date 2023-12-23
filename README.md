@@ -42,8 +42,6 @@ Consider the following Gardevoir set:
 
 The extension sidebar provides an interface to interact with Pokémon Showdown and the native application. Upon first opening the sidebar, the Pokémon set, options, and suggested EV spreads will be blank.
 
-![Default view](images/blank.png)
-
 Clicking "Update set" will import the current Pokémon set info into the extension and convert it into a PokéPaste, shown on the sidebar.
 
 ![Gardevoir paste](images/paste.png)
@@ -69,7 +67,7 @@ Modest Nature
 Outspeed 4 Spe Dragonite
 ```
 
-Clicking "Use this spread" above a specific EV spread will export the spread to the Showdown teambuilder.
+Clicking "Use this spread" above a specific EV spread will export the spread directly into the Showdown teambuilder.
 
 ![Gardevoir stats](images/stats.png)
 

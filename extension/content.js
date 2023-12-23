@@ -18,7 +18,7 @@ chrome.runtime.onMessage.addListener(({name, data}, sender, sendResponse) => {
             if (move3) paste += "\n- " + move3;
             if (move4) paste += "\n- " + move4;
         } else {
-            paste = "Please input a Pokemon, its ability, and a held item.";
+            paste = "Please update set with a Pokémon, ability, and held item.";
         }
 
 		sendResponse(paste);

@@ -4,7 +4,11 @@ document.body.querySelector("#update-pokepaste-btn").addEventListener("click", a
 		name: "get-mon-data",
 		data: null
 	});
-	document.body.querySelector("#pokepaste-text").innerText = resp;
+	if (resp === undefined) {
+		document.body.querySelector("#pokepaste-text").innerText = "Please update set with a Pokémon, ability, and held item."
+	} else {
+		document.body.querySelector("#pokepaste-text").innerText = resp;
+	}
 });
 
 function showSpreads(data) {
@@ -16,14 +20,16 @@ function showSpreads(data) {
         return;
     }
 
-    document.body.querySelector("#spreads-text").innerText = "Suggested spreads:";
+    document.body.querySelector("#spreads-text").innerText = "";
 
     var spread_count = 0;
     for (spread of data.text) {
         entry_div = document.createElement("div");
+        entry_div.className = "w3-input w3-border";
 
         var use_spread_btn = document.createElement("button");
         use_spread_btn.id = "use-spread-btn" + String(spread_count);
+        use_spread_btn.className = "w3-button w3-blue-grey";
         use_spread_btn.innerHTML = "Use this spread";
         entry_div.appendChild(use_spread_btn);
 
@@ -47,9 +53,13 @@ function showSpreads(data) {
                 calcs_list.appendChild(calc_li);
             }
         }
+        calcs_list.className = "w3-ul";
         entry_div.appendChild(calcs_list);
         
         spreads_list.appendChild(entry_div);
+        
+        entry_break = document.createElement("br");
+        spreads_list.appendChild(entry_break);
         
         spread_count += 1;
     }
