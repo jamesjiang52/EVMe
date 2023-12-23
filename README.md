@@ -8,7 +8,7 @@ EV Me is a Chrome extension for Pokémon Showdown that optimizes effort value (E
 
 The following versions were used for development and are compatible with the required dependencies.
 
-* Python 3.6.3
+* Python 3.8
 * Node.js 16.13.0
 * npm 8.1.0
 
