@@ -1,5 +1,6 @@
 const SHOWDOWN_TEAMBUILDER_URL = "https://play.pokemonshowdown.com";
 
+/*
 chrome.sidePanel
 	.setPanelBehavior({openPanelOnActionClick: true})
 	.catch((error) => console.error(error));
@@ -20,3 +21,4 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
 		});
 	}
 });
+*/

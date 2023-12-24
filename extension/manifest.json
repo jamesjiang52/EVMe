@@ -12,6 +12,11 @@
 	"background": {
 		"service_worker": "service-worker.js"
 	},
+    "sidebar_action": {
+        "default_icon": "icons/icon128.png",
+        "default_title": "EV Me",
+        "default_panel": "sidepanel.html"
+    },
 	"content_scripts": [{
 		"matches": ["*://play.pokemonshowdown.com/teambuilder"],
 		"js": ["content.js"]
