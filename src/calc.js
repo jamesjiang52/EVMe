@@ -96,8 +96,8 @@ function do_damage_calc() {
     //console.log(damage_calc)
     console.log({
         "Damage rolls": damage_calc.damage,
-        "Attacker stats": damage_calc.attacker.stats,
-        "Defender stats": damage_calc.defender.stats,
+        "Attacker stats": damage_calc.attacker.rawStats,  // use rawStats to handle things like Intimidate
+        "Defender stats": damage_calc.defender.rawStats,
         "Move": [bp, damage_calc.move.category]
     });
 }

@@ -35,6 +35,8 @@ PLUS_2_SPEED_ABILITIES = ["Chlorophyll", "Sand Rush", "Slush Rush", "Swift Swim"
 PLUS_6_SPEED_ABILITIES = ["Steam Engine"]
 PLUS_1_SPEED_ITEMS = ["Choice Scarf"]
 
+STAT_OVERRIDE_MOVES = ["Foul Play", "Body Press", "Psyshock", "Psystrike", "Secret Sword"]
+
 # https://bulbapedia.bulbagarden.net/wiki/Nature#Stat-focused_table
 NATURE_MATRIX = [
     ["Hardy", "Lonely", "Adamant", "Naughty", "Brave"],

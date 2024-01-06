@@ -230,7 +230,6 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             50
         )
 
-        # TODO: (improvement) account for Body Press, Foul Play, etc.
         hp = attack_benchmark_data["Spread"][1][0]
         A = spread[1]
         if nature in NATURE_MATRIX[0][1:]:
@@ -290,74 +289,163 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
 
     defense_benchmark_data = defense_EVs[5]
     if defense_benchmark_data:
-        calc = do_damage_calc(
-            defense_EVs[3],
-            defense_EVs[4],
-            defense_benchmark_data["Ability"],
-            defense_benchmark_data["Item"],
-            defense_benchmark_data["Spread"][1],
-            defense_benchmark_data["Spread"][0],
-            mon_name,
-            mon_data["Ability"],
-            mon_data["Item"],
-            spread,
-            nature,
-            50
-        )
+        if not defense_EVs[6]:
+            calc = do_damage_calc(
+                defense_EVs[3],
+                defense_EVs[4],
+                defense_benchmark_data["Ability"],
+                defense_benchmark_data["Item"],
+                defense_benchmark_data["Spread"][1],
+                defense_benchmark_data["Spread"][0],
+                mon_name,
+                mon_data["Ability"],
+                mon_data["Item"],
+                spread,
+                nature,
+                50
+            )
 
-        # TODO: (improvement) account for Body Press, Foul Play, etc.
-        hp = spread[0]
-        A = defense_benchmark_data["Spread"][1][1]
-        if defense_benchmark_data["Spread"][0] in NATURE_MATRIX[0][1:]:
-            modifier_A = "+"
-        elif defense_benchmark_data["Spread"][0] in [row[0] for row in NATURE_MATRIX[1:]]:
-            modifier_A = "-"
-        else:
-            modifier_A = ""
+            hp = spread[0]
 
-        D = spread[2]
-        if nature in NATURE_MATRIX[1][:1] + NATURE_MATRIX[1][2:]:
-            modifier_D = "+"
-        elif nature in [row[1] for row in NATURE_MATRIX[:1] + NATURE_MATRIX[2:]]:
-            modifier_D = "-"
-        else:
-            modifier_D = ""
+            if defense_EVs[3] in ["Psyshock", "Psystrike", "Secret Sword"]:
+                A = defense_benchmark_data["Spread"][1][3]
+                A_str = "SpA"
+                if defense_benchmark_data["Spread"][0] in NATURE_MATRIX[2][:2] + NATURE_MATRIX[2][3:]:
+                    modifier_A = "+"
+                elif defense_benchmark_data["Spread"][0] in [row[2] for row in NATURE_MATRIX[:2] + NATURE_MATRIX[3:]]:
+                    modifier_A = "-"
+                else:
+                    modifier_A = ""
+            elif defense_EVs[3] == "Body Press":
+                A = defense_benchmark_data["Spread"][1][2]
+                A_str = "Def"
+                if defense_benchmark_data["Spread"][0] in NATURE_MATRIX[1][:1] + NATURE_MATRIX[1][2:]:
+                    modifier_A = "+"
+                elif defense_benchmark_data["Spread"][0] in [row[1] for row in NATURE_MATRIX[:1] + NATURE_MATRIX[2:]]:
+                    modifier_A = "-"
+                else:
+                    modifier_A = ""
+            else:
+                A = defense_benchmark_data["Spread"][1][1]
+                A_str = "Atk"
+                if defense_benchmark_data["Spread"][0] in NATURE_MATRIX[0][1:]:
+                    modifier_A = "+"
+                elif defense_benchmark_data["Spread"][0] in [row[0] for row in NATURE_MATRIX[1:]]:
+                    modifier_A = "-"
+                else:
+                    modifier_A = ""
 
-        sitrus_berry = False
-        leftovers = False
-        if mon_data["Item"] in HEAL_1_16_ITEMS:
-            leftovers = True
-        elif mon_data["Item"] in HEAL_1_4_ITEMS:
-            sitrus_berry = True
+            D = spread[2]
+            if nature in NATURE_MATRIX[1][:1] + NATURE_MATRIX[1][2:]:
+                modifier_D = "+"
+            elif nature in [row[1] for row in NATURE_MATRIX[:1] + NATURE_MATRIX[2:]]:
+                modifier_D = "-"
+            else:
+                modifier_D = ""
 
-        min_percent, max_percent, kill_percent = process_damage_rolls(calc["Defender stats"][0], calc["Damage rolls"], defense_EVs[2], sitrus_berry=sitrus_berry, leftovers=leftovers)
-        if defense_EVs[2] == 1:
-            hko = "O"
-        else:
-            hko = "2"
+            sitrus_berry = False
+            leftovers = False
+            if mon_data["Item"] in HEAL_1_16_ITEMS:
+                leftovers = True
+            elif mon_data["Item"] in HEAL_1_4_ITEMS:
+                sitrus_berry = True
 
-        defense_str = "{}{} Atk {} {} {} {} vs. {} HP / {}{} Def {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
-            A,
-            modifier_A,
-            defense_benchmark_data["Ability"],
-            defense_benchmark_data["Item"],
-            defense_EVs[4],
-            defense_EVs[3],
-            hp,
-            D,
-            modifier_D,
-            mon_data["Item"],
-            mon_data["Ability"],
-            mon_name,
-            min_percent,
-            max_percent,
-            kill_percent,
-            hko
-        )
+            min_percent, max_percent, kill_percent = process_damage_rolls(calc["Defender stats"][0], calc["Damage rolls"], defense_EVs[2], sitrus_berry=sitrus_berry, leftovers=leftovers)
+            if defense_EVs[2] == 1:
+                hko = "O"
+            else:
+                hko = "2"
+
+            defense_str = "{}{} {} {} {} {} {} vs. {} HP / {}{} Def {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
+                A,
+                modifier_A,
+                A_str,
+                defense_benchmark_data["Ability"],
+                defense_benchmark_data["Item"],
+                defense_EVs[4],
+                defense_EVs[3],
+                hp,
+                D,
+                modifier_D,
+                mon_data["Item"],
+                mon_data["Ability"],
+                mon_name,
+                min_percent,
+                max_percent,
+                kill_percent,
+                hko
+            )
+
+        else:  # defense EVs is for Body Press benchmark
+            calc = do_damage_calc(
+                defense_EVs[3],
+                mon_name,
+                mon_data["Ability"],
+                mon_data["Item"],
+                spread,
+                nature,
+                defense_EVs[4],
+                defense_benchmark_data["Ability"],
+                defense_benchmark_data["Item"],
+                defense_benchmark_data["Spread"][1],
+                defense_benchmark_data["Spread"][0],
+                50
+            )
+
+            hp = defense_benchmark_data["Spread"][1][0]
+            A = spread[2]
+            if nature in NATURE_MATRIX[1][:1] + NATURE_MATRIX[1][2:]:
+                modifier_A = "+"
+            elif nature in [row[1] for row in NATURE_MATRIX[:1] + NATURE_MATRIX[2:]]:
+                modifier_A = "-"
+            else:
+                modifier_A = ""
+
+            D = defense_benchmark_data["Spread"][1][2]
+            if defense_benchmark_data["Spread"][0] in NATURE_MATRIX[1][:1] + NATURE_MATRIX[1][2:]:
+                modifier_D = "+"
+            elif defense_benchmark_data["Spread"][0] in [row[1] for row in NATURE_MATRIX[:1] + NATURE_MATRIX[2:]]:
+                modifier_D = "-"
+            else:
+                modifier_D = ""
+
+            sitrus_berry = False
+            leftovers = False
+            if defense_benchmark_data["Item"] in HEAL_1_16_ITEMS:
+                leftovers = True
+            elif defense_benchmark_data["Item"] in HEAL_1_4_ITEMS:
+                sitrus_berry = True
+
+            min_percent, max_percent, kill_percent = process_damage_rolls(calc["Defender stats"][0], calc["Damage rolls"], defense_EVs[2], sitrus_berry=sitrus_berry, leftovers=leftovers)
+            if defense_EVs[2] == 1:
+                hko = "O"
+            else:
+                hko = "2"
+
+            defense_str = "{}{} Def {} {} {} {} vs. {} HP / {}{} Def {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
+                A,
+                modifier_A,
+                mon_data["Item"],
+                mon_data["Ability"],
+                mon_name,
+                defense_EVs[3],
+                hp,
+                D,
+                modifier_D,
+                defense_benchmark_data["Ability"],
+                defense_benchmark_data["Item"],
+                defense_EVs[4],
+                min_percent,
+                max_percent,
+                kill_percent,
+                hko
+            )
+
         if print_to_stdout:
             print("Defense benchmark:          {}".format(defense_str))
         else:
             calcs[1] = defense_str
+
     else:
         if print_to_stdout:
             print("Defense benchmark:          N/A")
@@ -379,7 +467,6 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             50
         )
 
-        # TODO: (improvement) account for Body Press, Foul Play, etc.
         hp = special_attack_benchmark_data["Spread"][1][0]
         A = spread[3]
         if nature in NATURE_MATRIX[2][:2] + NATURE_MATRIX[2][3:]:
@@ -389,13 +476,24 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
         else:
             modifier_A = ""
 
-        D = special_attack_benchmark_data["Spread"][1][4]
-        if special_attack_benchmark_data["Spread"][0] in NATURE_MATRIX[3][:3] + NATURE_MATRIX[3][4:]:
-            modifier_D = "+"
-        elif special_attack_benchmark_data["Spread"][0] in [row[3] for row in NATURE_MATRIX[:3] + NATURE_MATRIX[4:]]:
-            modifier_D = "-"
+        if special_attack_EVs[3] in ["Psyshock", "Psystrike", "Secret Sword"]:
+            D = special_attack_benchmark_data["Spread"][1][2]
+            D_str = "Def"
+            if special_attack_benchmark_data["Spread"][0] in NATURE_MATRIX[1][:1] + NATURE_MATRIX[1][2:]:
+                modifier_D = "+"
+            elif special_attack_benchmark_data["Spread"][0] in [row[1] for row in NATURE_MATRIX[:1] + NATURE_MATRIX[2:]]:
+                modifier_D = "-"
+            else:
+                modifier_D = ""
         else:
-            modifier_D = ""
+            D = special_attack_benchmark_data["Spread"][1][4]
+            D_str = "SpD"
+            if special_attack_benchmark_data["Spread"][0] in NATURE_MATRIX[3][:3] + NATURE_MATRIX[3][4:]:
+                modifier_D = "+"
+            elif special_attack_benchmark_data["Spread"][0] in [row[3] for row in NATURE_MATRIX[:3] + NATURE_MATRIX[4:]]:
+                modifier_D = "-"
+            else:
+                modifier_D = ""
 
         sitrus_berry = False
         leftovers = False
@@ -410,7 +508,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
         else:
             hko = "2"
 
-        special_attack_str = "{}{} SpA {} {} {} {} vs. {} HP / {}{} SpD {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
+        special_attack_str = "{}{} SpA {} {} {} {} vs. {} HP / {}{} {} {} {} {}: {} - {}% -- {}% chance to {}HKO".format(
             A,
             modifier_A,
             mon_data["Item"],
@@ -420,6 +518,7 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             hp,
             D,
             modifier_D,
+            D_str,
             special_attack_benchmark_data["Ability"],
             special_attack_benchmark_data["Item"],
             special_attack_EVs[4],
@@ -453,7 +552,6 @@ def print_EV_calcs(mon_name, mon_data, nature, spread, remaining_EVs, attack_EVs
             50
         )
 
-        # TODO: (improvement) account for Body Press, Foul Play, etc.
         hp = spread[0]
         A = special_defense_benchmark_data["Spread"][1][3]
         if special_defense_benchmark_data["Spread"][0] in NATURE_MATRIX[2][:2] + NATURE_MATRIX[2][3:]:

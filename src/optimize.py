@@ -46,20 +46,28 @@ def choose_nature(nature_vector, spread):
 
     If nature_vector contains no stat to boost or if all stats require EV investment, return None.
     """
-    boosting_index = -1
-    harmful_index = -1
-    for i in range(len(nature_vector)):
-        if nature_vector[i]:
-            boosting_index = i
-        elif not nature_vector[i] and spread[i + 1] == 0 and harmful_index == -1:  # choose a stat to harm
-            if i in [1, 3] and spread[0] != 0:
-                # don't choose this defensive stat if there's investment into HP (would change damage calc)
-                continue
-            # usually choose one of the offensive stats, unless Pokemon is a mixed attacker
-            # in the case of a mixed attacker, this has the risk of changing a defense calc such that a particular attack can be survived with no bulk investment,
-            # but cannot be survived with a harmful defensive nature
-            # ignore this risk for now, mixed attackers are really rare anyways
-            harmful_index = i
+    if True in nature_vector:
+        boosting_index = nature_vector.index(True)
+    else:
+        boosting_index = -1
+
+    # usually choose one of the offensive stats, unless Pokemon is a mixed attacker
+    # in the case of a mixed attacker, this has the risk of changing a defense calc such that a particular attack can be survived with no bulk investment,
+    # but cannot be survived with a harmful defensive nature
+    # ignore this risk for now, mixed attackers are rare anyways
+    if not nature_vector[0] and spread[1] == 0:
+        harmful_index = 0
+    elif not nature_vector[2] and spread[3] == 0:
+        harmful_index = 2
+    elif not nature_vector[4] and spread[5] == 0:
+        harmful_index = 4
+    else:
+        if not nature_vector[1] and spread[2] == 0:
+            harmful_index = 1
+        elif not nature_vector[3] and spread[4] == 0:
+            harmful_index = 3
+        else:
+            harmful_index = -1
 
     # no boosting_nature required
     if boosting_index == -1:
@@ -98,8 +106,8 @@ def optimize_EVs(mon_name, req_offensive_EVs, req_defensive_EVs, req_speed_EVs, 
     # add 0 EVs invested into all stats
     req_attack_EVs.append((0, False, None, None, None, None))
     req_special_attack_EVs.append((0, False, None, None, None, None))
-    req_defense_EVs.append(((0, 0), False, None, None, None, None))
-    req_special_defense_EVs.append(((0, 0), False, None, None, None, None))
+    req_defense_EVs.append(((0, 0), False, None, None, None, None, False))
+    req_special_defense_EVs.append(((0, 0), False, None, None, None, None, False))
     req_speed_EVs.append((0, False, None, None))
 
     spreads = []
@@ -108,13 +116,17 @@ def optimize_EVs(mon_name, req_offensive_EVs, req_defensive_EVs, req_speed_EVs, 
     all_EVs_product = list(product(req_attack_EVs, req_special_attack_EVs, req_defense_EVs, req_special_defense_EVs, req_speed_EVs))
     for all_EVs in tqdm(all_EVs_product):
         attack_EVs, special_attack_EVs, defense_EVs, special_defense_EVs, speed_EVs = all_EVs
-        if defense_EVs[0][0] > special_defense_EVs[0][0]:
-            max_hp_EVs = defense_EVs[0][0]
-            defense_EVs_adj = defense_EVs
-            special_defense_EVs_adj = src.defenses.adjust_defensive_EVs(max_hp_EVs, special_defense_EVs)
-        else:
-            max_hp_EVs = special_defense_EVs[0][0]
-            defense_EVs_adj = src.defenses.adjust_defensive_EVs(max_hp_EVs, defense_EVs)
+        if not defense_EVs[-1]:
+            if defense_EVs[0][0] > special_defense_EVs[0][0]:
+                max_hp_EVs = defense_EVs[0][0]
+                defense_EVs_adj = defense_EVs
+                special_defense_EVs_adj = src.defenses.adjust_defensive_EVs(max_hp_EVs, special_defense_EVs)
+            else:
+                max_hp_EVs = special_defense_EVs[0][0]
+                defense_EVs_adj = src.defenses.adjust_defensive_EVs(max_hp_EVs, defense_EVs)
+                special_defense_EVs_adj = special_defense_EVs
+        else:  # defense EVs is for Body Press benchmark
+            defense_EVs_adj = ((0, defense_EVs[0]), *defense_EVs[1:])
             special_defense_EVs_adj = special_defense_EVs
         spread = (max_hp_EVs, attack_EVs[0], defense_EVs_adj[0][1], special_attack_EVs[0], special_defense_EVs_adj[0][1], speed_EVs[0])
         total_EVs = sum(spread)
@@ -139,21 +151,41 @@ def optimize_EVs(mon_name, req_offensive_EVs, req_defensive_EVs, req_speed_EVs, 
         if spread[1] not in seen_spreads:
             spreads_uniq.append(spread)
             seen_spreads.add(spread[1])
-    
-    # TODO: remove any that are directly worse than another
 
     # sort by number of remaining EVs (less is better)
     if bias1:
         bias1_index = STAT_NAMES.index(bias1)
         if bias2:
             bias2_index = STAT_NAMES.index(bias2)
-            return sorted(spreads_uniq, key=lambda x: (x[0], -(x[1][1][bias1_index] + x[1][1][bias2_index])))[:num_spreads]
+            spreads_uniq = sorted(spreads_uniq, key=lambda x: (x[0], -(x[1][1][bias1_index] + x[1][1][bias2_index])))
         else:
-            return sorted(spreads_uniq, key=lambda x: (x[0], -x[1][1][bias1_index]))[:num_spreads]
+            spreads_uniq = sorted(spreads_uniq, key=lambda x: (x[0], -x[1][1][bias1_index]))
     else:
-        return sorted(spreads_uniq, key=lambda x: x[0])[:num_spreads]
+        spreads_uniq = sorted(spreads_uniq, key=lambda x: x[0])
+
+    num_spreads = min(num_spreads, len(spreads_uniq))
+    spreads_out = []
+    i = 0
+    while len(spreads_out) < num_spreads and i < len(spreads_uniq):
+        spread = spreads_uniq[i]
+        is_worse = False
+        for spread_out in spreads_out:
+            if spread[0] <= spread_out[0] and \
+               spread[1] <= spread_out[1] and \
+               spread[2] <= spread_out[2] and \
+               spread[3] <= spread_out[3] and \
+               spread[4] <= spread_out[4] and \
+               spread[5] <= spread_out[5]:
+                is_worse = True
+                break
+        if not is_worse:
+            spreads_out.append(spread)
+        i += 1
+
+    return spreads_out
 
 
+# deprecated - use Chrome extension instead
 def main(argv):
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("input_file", help="paste of mon to allocate EVs for")
@@ -206,4 +238,5 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    #main(sys.argv)
+    pass

@@ -23,6 +23,9 @@ def get_offensive_benchmarks(attack_mon_name, attack_mon_data, defend_mons):
     special_moves = set()
     status_moves = set()
 
+    # bools to turn off some optimization
+    has_unique_moves = False
+
     for i in range(len(attack_mon_data["Moves"])):
         move = attack_mon_data["Moves"][i]
         category = get_move_category(move).strip()
@@ -33,6 +36,9 @@ def get_offensive_benchmarks(attack_mon_name, attack_mon_data, defend_mons):
         elif category == "Special":
             special_moves.add(move)
 
+        if move in STAT_OVERRIDE_MOVES:
+            has_unique_moves = True
+
     for mon_name, mon_data in tqdm(defend_mons.items()):
         mon_calcs_seen = set()  # avoid redundant calcs as much as possible
         defense_spreads = []
@@ -41,6 +47,11 @@ def get_offensive_benchmarks(attack_mon_name, attack_mon_data, defend_mons):
             defense_spreads.append((spread[0], (spread[1], 0, spread[2], 0, 0, 0)))
         for spread in mon_data["Spreads"][3]:
             special_defense_spreads.append((spread[0], (spread[1], 0, 0, 0, spread[2], 0)))
+
+        for move in ["Psyshock", "Psystrike", "Secret Sword"]:
+            if move in attack_mon_data["Moves"]:
+                for spread in mon_data["Spreads"][1]:
+                    special_defense_spreads.append((spread[0], (spread[1], 0, spread[2], 0, 0, 0)))
 
         spreads = (defense_spreads, special_defense_spreads)
 
@@ -91,10 +102,11 @@ def get_offensive_benchmarks(attack_mon_name, attack_mon_data, defend_mons):
                     if not calc["Damage rolls"]:
                         continue
 
-                    if (tuple(calc["Damage rolls"]), i) in mon_calcs_seen:
-                        skip_calc_eval = True
-                        break
-                    mon_calcs_seen.add((tuple(calc["Damage rolls"]), i))
+                    if not has_unique_moves:
+                        if (tuple(calc["Damage rolls"]), i) in mon_calcs_seen:
+                            skip_calc_eval = True
+                            break
+                        mon_calcs_seen.add((tuple(calc["Damage rolls"]), i))
 
                     if calc["Damage rolls"][0] > best_move_calc["Damage rolls"][0]:  # look at lowest roll for benchmark
                         best_move = move
@@ -103,7 +115,14 @@ def get_offensive_benchmarks(attack_mon_name, attack_mon_data, defend_mons):
                 if skip_calc_eval or "Move" not in best_move_calc:
                     continue
 
-                # TODO: (improvement) account for Body Press, Foul Play, etc.
+                if best_move == "Foul Play":
+                    continue
+                elif best_move == "Body Press":
+                    # handled in defensive EV allocation
+                    continue
+                elif best_move in ["Psyshock", "Psystrike", "Secret Sword"]:
+                    A = best_move_calc["Attacker stats"][3]
+                    D = best_move_calc["Defender stats"][2]
                 if best_move_calc["Move"][1] == "Physical":
                     A = best_move_calc["Attacker stats"][1]
                     D = best_move_calc["Defender stats"][2]
