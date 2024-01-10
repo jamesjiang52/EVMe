@@ -22,11 +22,15 @@ chrome.runtime.onMessage.addListener(({name, data}, sender, sendResponse) => {
         }
 
 		sendResponse(paste);
-	}
+    } else if (name === "update-evs") {
+        document.dispatchEvent(new CustomEvent("updateEVsEvent", {detail: data}));
+    }
 });
 
+/*
 chrome.runtime.onMessage.addListener(({name, data}) => {
     if (name === "update-evs") {
         document.dispatchEvent(new CustomEvent("updateEVsEvent", {detail: data}));
     }
 })
+*/
