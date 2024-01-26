@@ -99,9 +99,9 @@ document.body.querySelector("#submit-btn").addEventListener("click", async () =>
         "num_mons": document.body.querySelector("#num-meta-mons").value,
         "num_spreads": document.body.querySelector("#num-spreads").value,
         "bias1": bias1,
-        "bias2": bias2,
-        "moveset_url": "https://www.smogon.com/stats/2023-11/moveset/gen9vgc2023regulationebo3-1760.txt",
-        "chaos_url": "https://www.smogon.com/stats/2023-11/chaos/gen9vgc2023regulationebo3-1760.json"
+        "bias2": bias2
+        //"moveset_url": "https://www.smogon.com/stats/2023-11/moveset/gen9vgc2023regulationebo3-1760.txt",
+        //"chaos_url": "https://www.smogon.com/stats/2023-11/chaos/gen9vgc2023regulationebo3-1760.json"
         //"moveset_url": document.body.querySelector("#moveset-url").value,
         //"chaos_url": document.body.querySelector("#chaos-url").value
     }

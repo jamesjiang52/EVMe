@@ -50,6 +50,17 @@ Lastly, open `manifest.json` in this repo's root directory and replace the curre
 
 ![Extension ID](images/ext_ID.png)
 
+## Updating
+
+Updating EVMe is required when new Pokémon or mechanics are introduced. To update, run these commands:
+
+```
+git pull
+npm update @smogon/calc
+```
+
+No additional installation steps are required.
+
 ## Usage
 
 EV Me takes as input a Pokémon, its ability and held item, and any number of moves, and outputs a user-specified number of optimized EV spreads. An EV spread is considered to be more optimal if it wastes less EVs, that is, if every single available EV is contributing to a speed benchmark, or an offensive or defensive calc. This is best illustrated using an example (taken from the November 2023, OTS Bo3 VGC metagame at highest Elo bracket).

@@ -33,7 +33,11 @@ def get_message():
 def main():
     message = get_message()
     
-    meta_mons = src.parse.get_mons(message["moveset_url"], message["chaos_url"], int(message["num_mons"]))
+    meta_mons = src.parse.get_mons(
+        "https://raw.githubusercontent.com/jamesjiang52/EVMe/main/data/moveset.txt",
+        "https://raw.githubusercontent.com/jamesjiang52/EVMe/main/data/chaos.json",
+        int(message["num_mons"])
+    )
     
     mon_data = src.parse.import_from_paste(message["mon_data"])
     mon_name = mon_data["Name"]
