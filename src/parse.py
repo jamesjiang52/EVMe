@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import requests
 import dirtyjson
 from pprint import pprint
@@ -648,32 +649,44 @@ def import_from_paste(paste):
     mon = {}
     moves = []
 
-    first_line = lines[0].strip()
-    mon_info = first_line.split("@")
-    mon["Item"] = mon_info[1].strip()
+    paste_start_nickname_gender_re = re.compile("(.*) \((.*)\) \(([MF])\) @ (.*)")
+    paste_start_gender_re = re.compile("(.*) \(([MF])\) @ (.*)")
+    paste_start_nickname_re = re.compile("(.*) \((.*)\) @ (.*)")
+    paste_start_re = re.compile("(.*) @ (.*)")
 
-    # FIXME: name/nickname/gender parsing
-    mon["Name"] = mon_info[0].strip()
-    #mod = 1 if mon_info[-1] in ["(M)", "(F)"] else 0
-    #if len(mon_info) == 2 + mod:  # has nickname
-    #    mon["Name"] = mon_info[1][1:-1]
-    #else:
-    #    mon["Name"] = mon_info[0]
-
-    for line in lines[1:]:
+    for line in lines:
         line = line.strip()
-        if line.startswith("Ability"):
+        if m := re.match(paste_start_nickname_gender_re, line):
+            mon["Name"] = m.group(2)
+            mon["Item"] = m.group(4)
+            break
+        elif m := re.match(paste_start_gender_re, line):
+            mon["Name"] = m.group(1)
+            mon["Item"] = m.group(3)
+            break
+        elif m := re.match(paste_start_nickname_re, line):
+            mon["Name"] = m.group(2)
+            mon["Item"] = m.group(3)
+            break
+        elif m := re.match(paste_start_re, line):
+            mon["Name"] = m.group(1)
+            mon["Item"] = m.group(2)
+            break
+
+    for line in lines:
+        line = line.strip()
+        if "Ability" in line:
             mon["Ability"] = line.split(":")[1].strip()
-        elif line.startswith("EVs"):  # don't currently use EVs, but include it anyway
+        elif "EVs" in line:  # don't currently use EVs, but include it anyway
             fixed_EVs = [0, 0, 0, 0, 0, 0]
             EVs = line.split(":")[1].strip().split(" / ")
             for EV in EVs:
                 value, name = EV.split()
                 fixed_EVs[stat_names.index(name)] = int(value)
             mon["EVs"] = fixed_EVs
-        elif line.startswith("-"):  # moves
+        elif "- " in line:  # moves
             moves.append(line[1:].strip())
-        elif line.endswith("Nature"):  # don't currently use nature, but include it anyway
+        elif "Nature" in line:  # don't currently use nature, but include it anyway
             mon["Nature"] = line.split()[0]
 
     mon["Moves"] = moves
