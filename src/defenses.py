@@ -406,9 +406,15 @@ def allocate_defensive_EVs(mon_name, mon_data, attack_mons):
                         break
                     mon_calcs_seen.add((tuple(calc["Damage rolls"]), i))
 
-                if calc["Damage rolls"][-1] > best_move_calc["Damage rolls"][-1]:  # look at highest roll for benchmark
-                    best_move = move
-                    best_move_calc = calc
+                if isinstance(calc["Damage rolls"], list):
+                    if calc["Damage rolls"][-1] > best_move_calc["Damage rolls"][-1]:  # look at highest roll for benchmark
+                        best_move = move
+                        best_move_calc = calc
+                else: # single damage number (e.g. Final Gambit)
+                    if calc["Damage rolls"] > best_move_calc["Damage rolls"][-1]:
+                        best_move = move
+                        best_move_calc = calc
+                        best_move_calc["Damage rolls"] = [best_move_calc["Damage rolls"]]
 
             if skip_calc_eval or "Move" not in best_move_calc:
                 continue

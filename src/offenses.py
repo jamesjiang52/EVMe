@@ -108,9 +108,15 @@ def get_offensive_benchmarks(attack_mon_name, attack_mon_data, defend_mons):
                             break
                         mon_calcs_seen.add((tuple(calc["Damage rolls"]), i))
 
-                    if calc["Damage rolls"][0] > best_move_calc["Damage rolls"][0]:  # look at lowest roll for benchmark
-                        best_move = move
-                        best_move_calc = calc
+                    if isinstance(calc["Damage rolls"], list):
+                        if calc["Damage rolls"][0] > best_move_calc["Damage rolls"][0]:  # look at lowest roll for benchmark
+                            best_move = move
+                            best_move_calc = calc
+                    else: # single damage number (e.g. Final Gambit)
+                        if calc["Damage rolls"] > best_move_calc["Damage rolls"][0]:
+                            best_move = move
+                            best_move_calc = calc
+                            best_move_calc["Damage rolls"] = [best_move_calc["Damage rolls"]]
 
                 if skip_calc_eval or "Move" not in best_move_calc:
                     continue

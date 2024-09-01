@@ -30,7 +30,7 @@ def get_mons(moveset_file_url, chaos_file_url, num_mons=12):
 
     for line in lines:
         if "-----" in line:
-            if num_separators_seen == 8:
+            if num_separators_seen == 9:
                 mon_curr["Abilities"] = mon_curr_abilities
                 mon_curr["Items"] = mon_curr_items
                 #mon_curr["Spreads"] = mon_curr_spreads
@@ -96,7 +96,8 @@ def get_mons(moveset_file_url, chaos_file_url, num_mons=12):
                 if percent > MOVE_THRESHOLD and move != "Other":
                     mon_curr_moves.append(move)
 
-        else:  # teammates, checks + counters
+        else:  # tera types teammates, checks + counters
+            # TODO: can add tera types to optimizer
             continue
 
     # assume NUM_MONS < number of Pokemon listed in file
